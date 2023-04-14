@@ -51,6 +51,42 @@ roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
 
 ![image](https://user-images.githubusercontent.com/121313424/231906301-ab5a2264-1948-49bf-8bab-2b77bc8c4736.png)
 
+``` 
+otus> db.less2.countDocuments()
+500
+```
+![image](https://user-images.githubusercontent.com/121313424/231908180-bf1c9094-f5f0-4c3d-839d-3a643fefe48f.png)
+
+###
+3. Выборка и обновление данных
+
+
+В ходе изучения опраторов mongoDB решил выполнить поиск дубликатов в коллекции.
+Получилось два варианта:
+
+3.1 Найти дубликаты городов:
+
+Код: 
+```sql
+use('otus');
+config.set("displayBatchSize", 300)
+db.less2.aggregate([
+    {"$group" :{ "_id": "$city", "count": { "$sum": 1 }}},
+    {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } },
+    {"$sort": {"city" : 1, _id: 1} }, 
+    {"$project": {"city" : "$_id", "_id" : 0} }
+]);
+```
+Результат: 
+
+![image](https://user-images.githubusercontent.com/121313424/231929514-6f54f8fd-0bb2-4416-9bae-fe2f9b4eba0f.png)
+
+3.2 Вывести id и имена которые имеют дубликаты городов
+
+```sql 
+
+
+
 
 
 
