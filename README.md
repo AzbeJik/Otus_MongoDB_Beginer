@@ -33,14 +33,13 @@ sudo firewall-cmd --reload
 1.3 Создание админа в БД в mongosh
 
 ```sql
-sql use admin
+use admin
 db.createUser(
-{
-user: "mongouser",
-pwd: passwordPrompt(), // or cleartext password
-roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
-}
-)
+   {
+       user: "Admin", 
+       pwd: passwordPrompt(), 
+       roles:["root"]
+   })
 ```
 ##
 2. Заполнение базы
@@ -60,30 +59,96 @@ otus> db.less2.countDocuments()
 ###
 3. Выборка и обновление данных
 
+3.1 Вывести города имеющие больше одной записи и колличество повторений:
 
-В ходе изучения опраторов mongoDB решил выполнить поиск дубликатов в коллекции.
-Получилось два варианта:
+```sql
+db.less2.aggregate([
+  {
+    $group: {
+      _id: "$city",
+      count: { $sum: 1 }
+    }
+  },
+  {
+    $match: {
+      count: { $gt: 1 }
+    }
+  },
+  {
+    $sort: {
+      count: -1
+    }
+  }
+])
+```
 
-3.1 Найти дубликаты городов:
+Результат: 
+
+![image](https://user-images.githubusercontent.com/121313424/232605318-da21e777-5af1-4fd5-8557-fa3cf2a4cadc.png)
+
+
+Вывести города имеющие больше одной записи и колличество повторений и их номера
 
 Код: 
 ```sql
-use('otus');
-config.set("displayBatchSize", 300)
+ use('otus');
+config.set("displayBetchSize", 300)
+
 db.less2.aggregate([
-    {"$group" :{ "_id": "$city", "count": { "$sum": 1 }}},
-    {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } },
-    {"$sort": {"city" : 1, _id: 1} }, 
-    {"$project": {"city" : "$_id", "_id" : 0} }
-]);
+    {
+      $group: {
+        _id: "$city",
+        count: { $sum: 1 },
+        ids: { $push: "$_id" }
+      }
+    },
+    {
+      $match: {
+        count: { $gt: 1 }
+      }
+    },
+    {
+      $sort: {
+        _id: 1
+      }
+    }
+  ]) 
 ```
-Результат: 
+![image](https://user-images.githubusercontent.com/121313424/232605367-10e322c8-05d6-4ee4-87cc-8a4a445cfab0.png)
 
-![image](https://user-images.githubusercontent.com/121313424/231929514-6f54f8fd-0bb2-4416-9bae-fe2f9b4eba0f.png)
+3.2 Вывести самого имя индентификатор и возраст самого молодого человека в БД
 
-3.2 Вывести id и имена которые имеют дубликаты городов
+Код:
+```sql
+use('otus');
 
-```sql 
+db.less2.aggregate([
+    {
+      $project: {
+        name: 1,
+        numberrange: 1,
+        age: {
+          $floor: {
+            $divide: [
+              { $subtract: [new Date(), { $toDate: "$birthdaydate" }] },
+              31536000000 // количество миллисекунд в году
+            ]
+          }
+        }
+      }
+    },
+    {
+      $sort: { age: 1 } // сортируем возраст по возрастанию
+    },
+    {
+      $limit: 1 // выбираем только самого молодого человека
+    }
+  ])
+```
+
+![image](https://user-images.githubusercontent.com/121313424/232602636-3e1fc5c7-03aa-424a-bc42-e1e294cc35fb.png)
+
+
 
 
 
