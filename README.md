@@ -46,7 +46,7 @@ db.createUser(
 
 2.1 При помощи https://generatedata.com/generator генерируем данные и импортируем в бд (использовал формат JSON)
 
-` mongoimport -d otus -c less2 --file /tmp/data.json --jsonArray -u root --authenticationDatabase admin `
+` mongoimport -d otus -c less2 --file /tmp/data.json --jsonArray -u Admin --authenticationDatabase admin `
 
 ![image](https://user-images.githubusercontent.com/121313424/231906301-ab5a2264-1948-49bf-8bab-2b77bc8c4736.png)
 
