@@ -149,7 +149,62 @@ db.less2.aggregate([
 ![image](https://user-images.githubusercontent.com/121313424/232602636-3e1fc5c7-03aa-424a-bc42-e1e294cc35fb.png)
 
 
+3.3 Изменить все email с доменом @yahoo на @yandex.ru
 
+```sql
+db.less2.updateMany(
+  { email: { $regex: /@yahoo\.ca$/ } }, // фильтр для выбора нужных документов
+  { $set: { email: { $regexReplace: { input: "$email", regex: "@yahoo\\.ca$", replacement: "@yandex.ru" } } } } // операция обновления документов
+)
+```
+Результат:
+
+![image](https://user-images.githubusercontent.com/121313424/232606646-d05279d6-d065-4a12-b0ae-bc3552d9aeb7.png)
+
+####
+
+4. Создать индексы и сравнить производительность.
+
+4.1 Дла теста сделела копию таблицы и коллекции и сгенерировал 50000 документов.
+
+Найти города начинающихся с буквы "C", и дату рождения, которая меньше 1 января 2000 года. 
+Затем результаты сортируются по имени в обратном порядке и по номерному ряду в прямом порядке.
+
+```sql
+db.less2_copy.find({
+  city: {$regex: /^C/},
+  birthdaydate: {$lt: new Date("2000-01-01")}
+}).sort({
+  name: -1,
+  numberrange: 1
+}).explain("executionStats")
+
+```
+
+Результат до индекса:
+
+``` executionStats: {
+    executionSuccess: true,
+    nReturned: 0,
+    executionTimeMillis: 18,
+    totalKeysExamined: 0,
+    totalDocsExamined: 50500
+  ``` 
+ Резултат после индексов по городу и дате дня рожденья:
+ 
+ ``` executionStats: {
+    executionSuccess: true,
+    nReturned: 0,
+    executionTimeMillis: 1,
+    totalKeysExamined: 0,
+    totalDocsExamined: 0,
+   ```
+    
+   
+
+  
+  
+  
 
 
 
